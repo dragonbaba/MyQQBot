@@ -1,0 +1,13 @@
+[Desktop Entry]
+Version=1.0
+Name=My Product
+Comment=A MyQQBot application
+# The Exec line includes %u to pass the URL to the application
+Exec=/usr/local/bin/myqqbot.exe %u
+Terminal=false
+Type=Application
+Icon=myqqbot.exe
+Categories=Utility;
+StartupWMClass=myqqbot.exe
+
+ 
