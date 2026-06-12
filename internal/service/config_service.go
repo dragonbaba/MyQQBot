@@ -64,12 +64,13 @@ func (s *ConfigService) TestLLMConnection(baseURL, apiKey string) TestLLMResult 
 	if err != nil {
 		return TestLLMResult{Success: false, Error: fmt.Sprintf("list models failed: %v", err)}
 	}
-
 	// Also test a minimal chat completion with the current model.
+	// Use a non-empty message and avoid models that may reject simple greetings.
 	_, err = client.CreateChatCompletion(ctx, openai.ChatCompletionRequest{
 		Model: s.cfg.LLM.Model,
 		Messages: []openai.ChatCompletionMessage{
-			{Role: openai.ChatMessageRoleUser, Content: "Hi"},
+			{Role: openai.ChatMessageRoleSystem, Content: "You are a helpful assistant."},
+			{Role: openai.ChatMessageRoleUser, Content: "Say hello briefly."},
 		},
 	})
 	if err != nil {
