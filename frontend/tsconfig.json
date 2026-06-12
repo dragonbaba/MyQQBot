@@ -19,7 +19,11 @@
     "noUnusedLocals": true,
     "noUnusedParameters": false,
     "noImplicitAny": false,
-    "noFallthroughCasesInSwitch": true
+    "noFallthroughCasesInSwitch": true,
+
+    /* Allow importing generated JS bindings */
+    "allowJs": true,
+    "checkJs": false
   },
-  "include": ["src", "bindings"],
+  "include": ["src", "bindings"]
 }

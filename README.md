@@ -1,59 +1,57 @@
-# Welcome to Your New Wails3 Project!
+# MyQQBot
 
-Congratulations on generating your Wails3 application! This README will guide you through the next steps to get your project up and running.
+基于 Go + Wails v3 的桌面 QQ 机器人，连接 OneBot v11 协议适配器（NapCatQQ / Lagrange.OneBot），集成 OpenAI 兼容 API 与 Function Calling 搜索工具。
 
-## Getting Started
+## 功能
 
-1. Navigate to your project directory in the terminal.
+- 🖥️ 现代化 Dark Mode (OLED) 桌面 GUI
+- 🤖 OpenAI 兼容 API 对话（支持中转 / OneAPI）
+- 🔍 Function Calling 自动触发 `search_web` 搜索实时信息
+- 💬 QQ 群聊 / 私聊自动回复
+- ⚙️ GUI 内配置 LLM / OneBot / 搜索参数
+- 📊 Dashboard、Chat、Settings、Logs 多页面
 
-2. To run your application in development mode, use the following command:
+## 技术栈
 
-   ```
-   wails3 dev
-   ```
+- 后端：Go 1.25 + Wails v3
+- 前端：React 18 + TypeScript + Vite + Tailwind CSS
+- 协议：OneBot v11 (WebSocket)
+- LLM：OpenAI 兼容 API
+- 搜索：DuckDuckGo（默认免费）/ Tavily
 
-   This will start your application and enable hot-reloading for both frontend and backend changes.
+## 前置依赖
 
-3. To build your application for production, use:
+- [Go 1.22+](https://go.dev/dl/)
+- [Node.js 20+](https://nodejs.org/)
+- [Wails v3 CLI](https://v3.wails.io/)
+- [NapCatQQ](https://github.com/NapNeko/NapCatQQ) 或 [Lagrange.OneBot](https://github.com/LagrangeDev/Lagrange.OneBot)
+- 有效的 OpenAI 兼容 API Key
 
-   ```
-   wails3 build
-   ```
+## 快速开始
 
-   This will create a production-ready executable in the `build` directory.
+```bash
+git clone https://github.com/dragonbaba/MyQQBot.git
+cd MyQQBot
+wails3 dev
+```
 
-## Exploring Wails3 Features
+首次启动后：
 
-Now that you have your project set up, it's time to explore the features that Wails3 offers:
+1. 在 Settings 页面填写 LLM Base URL、API Key、Model。
+2. 填写 OneBot WebSocket URL（如 `ws://127.0.0.1:3001`）。
+3. 启动 NapCatQQ / Lagrange.OneBot 并确认 OneBot HTTP API 在 `127.0.0.1:3000` 可用。
+4. 返回 Settings → 启动机器人。
 
-1. **Check out the examples**: The best way to learn is by example. Visit the `examples` directory in the `v3/examples` directory to see various sample applications.
+## 配置
 
-2. **Run an example**: To run any of the examples, navigate to the example's directory and use:
+应用启动时会读取工作目录下的 `config.yaml`。首次运行时文件不存在会自动生成默认值。示例模板见 `config.example.yaml`。
 
-   ```
-   go run .
-   ```
+> ⚠️ `config.yaml` 包含 API Key，已被 `.gitignore` 排除，请勿提交到仓库。
 
-   Note: Some examples may be under development during the alpha phase.
+## 截图
 
-3. **Explore the documentation**: Visit the [Wails3 documentation](https://v3.wails.io/) for in-depth guides and API references.
+（待补充）
 
-4. **Join the community**: Have questions or want to share your progress? Join the [Wails Discord](https://discord.gg/JDdSxwjhGf) or visit the [Wails discussions on GitHub](https://github.com/wailsapp/wails/discussions).
+## License
 
-## Project Structure
-
-Take a moment to familiarize yourself with your project structure:
-
-- `frontend/`: Contains your frontend code (HTML, CSS, JavaScript/TypeScript)
-- `main.go`: The entry point of your Go backend
-- `app.go`: Define your application structure and methods here
-- `wails.json`: Configuration file for your Wails project
-
-## Next Steps
-
-1. Modify the frontend in the `frontend/` directory to create your desired UI.
-2. Add backend functionality in `main.go`.
-3. Use `wails3 dev` to see your changes in real-time.
-4. When ready, build your application with `wails3 build`.
-
-Happy coding with Wails3! If you encounter any issues or have questions, don't hesitate to consult the documentation or reach out to the Wails community.
+MIT

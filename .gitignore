@@ -4,3 +4,11 @@ frontend/dist
 frontend/node_modules
 build/linux/appimage/build
 build/windows/nsis/MicrosoftEdgeWebview2Setup.exe
+
+# Local configuration contains secrets
+config.yaml
+*.exe
+
+# IDE
+.vscode/
+.idea/

@@ -1,0 +1,11 @@
+llm:
+  base_url: "https://api.openai.com/v1"
+  api_key: ""
+  model: "gpt-4o"
+  system_prompt: "你是一个有用的 QQ 机器人助手。当用户询问时事、天气、新闻或需要实时信息时，请使用 search_web 工具获取最新信息后再回答。"
+bot:
+  onebot_ws_url: "ws://127.0.0.1:3001"
+  admin_qq: ""
+search:
+  provider: "duckduckgo"
+  tavily_api_key: ""
