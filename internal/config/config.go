@@ -8,10 +8,21 @@ import (
 
 // LLMConfig holds the OpenAI-compatible LLM settings.
 type LLMConfig struct {
-	BaseURL      string `mapstructure:"base_url" json:"base_url"`
-	APIKey       string `mapstructure:"api_key" json:"api_key"`
-	Model        string `mapstructure:"model" json:"model"`
-	SystemPrompt string `mapstructure:"system_prompt" json:"system_prompt"`
+	BaseURL           string                 `mapstructure:"base_url" json:"base_url"`
+	APIKey            string                 `mapstructure:"api_key" json:"api_key"`
+	Model             string                 `mapstructure:"model" json:"model"`
+	VisionModel       string                 `mapstructure:"vision_model" json:"vision_model"`
+	ReasoningEffort   string                 `mapstructure:"reasoning_effort" json:"reasoning_effort"`
+	SystemPrompt      string                 `mapstructure:"system_prompt" json:"system_prompt"`
+	ModelCapabilities map[string]ModelCapability `mapstructure:"model_capabilities" json:"model_capabilities"`
+}
+
+// ModelCapability stores per-model overrides detected by the user.
+type ModelCapability struct {
+	Vision     bool `mapstructure:"vision" json:"vision"`
+	Tools      bool `mapstructure:"tools" json:"tools"`
+	Reasoning  bool `mapstructure:"reasoning" json:"reasoning"`
+	MaxContext int  `mapstructure:"max_context" json:"max_context"`
 }
 
 // BotConfig holds the OneBot adapter connection settings.
@@ -37,10 +48,13 @@ type Config struct {
 func DefaultConfig() *Config {
 	return &Config{
 		LLM: LLMConfig{
-			BaseURL:      "https://api.openai.com/v1",
-			APIKey:       "",
-			Model:        "gpt-4o",
-			SystemPrompt: "你是一个有用的 QQ 机器人助手。当用户询问时事、天气、新闻或需要实时信息时，请使用 search_web 工具获取最新信息后再回答。",
+			BaseURL:           "https://api.openai.com/v1",
+			APIKey:            "",
+			Model:             "gpt-4o",
+			VisionModel:       "",
+			ReasoningEffort:   "",
+			SystemPrompt:      "你是一个有用的 QQ 机器人助手。当用户询问时事、天气、新闻或需要实时信息时，请使用 search_web 工具获取最新信息后再回答。",
+			ModelCapabilities: make(map[string]ModelCapability),
 		},
 		Bot: BotConfig{
 			OneBotWSURL: "ws://127.0.0.1:3001",

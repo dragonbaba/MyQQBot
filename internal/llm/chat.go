@@ -24,12 +24,19 @@ func (c *Client) Chat(ctx context.Context, messages []openai.ChatCompletionMessa
 	copy(currentMessages, messages)
 
 	for round := 0; round <= maxToolRounds; round++ {
+		// Clamp messages to model context limit (approximate by tokens ~= chars/4).
+		maxCtx := c.MaxContext()
+		currentMessages = trimMessagesToContext(currentMessages, maxCtx)
+
 		req := openai.ChatCompletionRequest{
 			Model:    c.cfg.Model,
 			Messages: currentMessages,
 		}
 		if len(tools) > 0 && executor != nil {
 			req.Tools = tools
+		}
+		if c.cfg.ReasoningEffort != "" {
+			req.ReasoningEffort = c.cfg.ReasoningEffort
 		}
 
 		resp, err := c.client.CreateChatCompletion(ctx, req)
@@ -76,4 +83,26 @@ func (c *Client) Chat(ctx context.Context, messages []openai.ChatCompletionMessa
 	}
 
 	return nil, errors.New("tool call recursion exceeded limit")
+}
+
+// trimMessagesToContext drops oldest messages until the total is under the context limit.
+// Approximation: 1 token ~= 4 UTF-8 characters for CJK/English mixed text.
+func trimMessagesToContext(messages []openai.ChatCompletionMessage, maxCtx int) []openai.ChatCompletionMessage {
+	if maxCtx <= 0 {
+		return messages
+	}
+	maxChars := maxCtx * 4
+	total := 0
+	for _, m := range messages {
+		total += len(m.Content)
+	}
+	start := 0
+	for total > maxChars && start < len(messages)-1 {
+		total -= len(messages[start].Content)
+		start++
+	}
+	if start == 0 {
+		return messages
+	}
+	return messages[start:]
 }

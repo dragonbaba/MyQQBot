@@ -12,6 +12,7 @@ type ChatMode = 'direct' | 'qq';
 export function Chat() {
   const [mode, setMode] = useState<ChatMode>('direct');
   const [loading, setLoading] = useState(false);
+  const [pendingImages, setPendingImages] = useState<string[]>([]);
   const chatMessages = useAppStore((s) => s.chatMessages);
   const addChatMessage = useAppStore((s) => s.addChatMessage);
   const sessions = useAppStore((s) => s.sessions);
@@ -37,10 +38,21 @@ export function Chat() {
   }, [chatMessages]);
 
   const handleDirectSend = async (text: string) => {
-    addChatMessage({ role: 'user', content: text, timestamp: Date.now() });
+    const images = pendingImages.length > 0 ? pendingImages : undefined;
+    if (images) {
+      addChatMessage({ role: 'user', content: text, timestamp: Date.now(), imageUrls: images });
+    } else {
+      addChatMessage({ role: 'user', content: text, timestamp: Date.now() });
+    }
     setLoading(true);
     try {
-      const reply = await ChatService.SendMessage(text);
+      let reply: string;
+      if (images && images.length > 0) {
+        reply = await ChatService.SendVisionMessage(text, images);
+        setPendingImages([]);
+      } else {
+        reply = await ChatService.SendMessage(text);
+      }
       addChatMessage({ role: 'assistant', content: reply, timestamp: Date.now() });
     } catch (err) {
       addToast({ type: 'error', message: `请求失败: ${err}` });
@@ -53,15 +65,49 @@ export function Chat() {
 
   return (
     <div className="h-full flex">
-      {mode === 'qq' && (
+      {mode === 'direct' && (
         <aside className="w-72 border-r border-border-DEFAULT bg-surface-card/50 p-3 flex flex-col">
-          <SessionList
-            sessions={sessions}
-            activeId={activeSessionId}
-            onSelect={setActiveSessionId}
+          <h3 className="text-xs font-mono uppercase tracking-wider text-text-muted mb-3">图片附件</h3>
+          {pendingImages.length === 0 ? (
+            <p className="text-sm text-text-secondary">暂无图片</p>
+          ) : (
+            <div className="space-y-2">
+              {pendingImages.map((url, idx) => (
+                <div key={idx} className="relative group">
+                  <img src={url} alt="" className="w-full h-24 object-cover rounded-lg border border-border-subtle" />
+                  <button
+                    onClick={() => setPendingImages((prev) => prev.filter((_, i) => i !== idx))}
+                    className="absolute top-1 right-1 p-1 bg-status-error text-white rounded-md opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+                  >
+                    ×
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+          <input
+            type="text"
+            className="mt-2 w-full bg-surface-base border border-border-subtle rounded-lg px-3 py-2 text-xs text-text-primary focus:outline-none focus:border-brand-cta/50"
+            placeholder="粘贴图片 URL 按回车"
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                const value = (e.target as HTMLInputElement).value.trim();
+                if (value) {
+                  setPendingImages((prev) => [...prev, value]);
+                  (e.target as HTMLInputElement).value = '';
+                }
+              }
+            }}
           />
         </aside>
       )}
+
+      {mode === 'qq' && (
+        <aside className="w-72 border-r border-border-DEFAULT bg-surface-card/50 p-3 flex flex-col">
+          <SessionList sessions={sessions} activeId={activeSessionId} onSelect={setActiveSessionId} />
+        </aside>
+      )}
+
       <div className="flex-1 flex flex-col p-4 min-w-0">
         <div className="flex items-center gap-2 mb-3">
           <button
