@@ -50,7 +50,11 @@ func (s *ConfigService) SaveConfig(cfg config.Config) error {
 	return nil
 }
 
-// TestLLMConnection validates LLM connectivity and returns available models.
+// TestLLMConnection validates LLM connectivity by listing available models.
+// We intentionally avoid sending a chat completion here because many
+// OpenAI-compatible gateways or reasoning models reject simple test prompts
+// with opaque 400 errors (e.g. "Param Incorrect"). Listing models is a
+// reliable, read-only way to verify the URL and API key.
 func (s *ConfigService) TestLLMConnection(baseURL, apiKey string) TestLLMResult {
 	if apiKey == "" {
 		return TestLLMResult{Success: false, Error: "API key is empty"}
@@ -64,22 +68,25 @@ func (s *ConfigService) TestLLMConnection(baseURL, apiKey string) TestLLMResult 
 	if err != nil {
 		return TestLLMResult{Success: false, Error: fmt.Sprintf("list models failed: %v", err)}
 	}
-	// Also test a minimal chat completion with the current model.
-	// Use a non-empty message and avoid models that may reject simple greetings.
-	_, err = client.CreateChatCompletion(ctx, openai.ChatCompletionRequest{
-		Model: s.cfg.LLM.Model,
-		Messages: []openai.ChatCompletionMessage{
-			{Role: openai.ChatMessageRoleSystem, Content: "You are a helpful assistant."},
-			{Role: openai.ChatMessageRoleUser, Content: "Say hello briefly."},
-		},
-	})
-	if err != nil {
-		return TestLLMResult{Success: false, Error: fmt.Sprintf("chat test failed: %v", err)}
-	}
 
 	result := TestLLMResult{Success: true, Models: make([]LLMModelInfo, 0, len(models.Models))}
 	for _, m := range models.Models {
 		cap := llm.DetectCapability(m.ID)
+		// Allow user overrides stored in config to take precedence.
+		if override, ok := s.cfg.LLM.ModelCapabilities[m.ID]; ok {
+			if override.Vision {
+				cap.Vision = true
+			}
+			if override.Tools {
+				cap.Tools = true
+			}
+			if override.Reasoning {
+				cap.Reasoning = true
+			}
+			if override.MaxContext > 0 {
+				cap.MaxContext = override.MaxContext
+			}
+		}
 		result.Models = append(result.Models, LLMModelInfo{
 			ID:        cap.ID,
 			Vision:    cap.Vision,
