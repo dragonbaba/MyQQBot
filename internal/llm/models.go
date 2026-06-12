@@ -10,31 +10,37 @@ import (
 
 // ModelCapability describes what a model can do.
 type ModelCapability struct {
-	ID           string `json:"id"`
-	Vision       bool   `json:"vision"`
-	Tools        bool   `json:"tools"`
-	Reasoning    bool   `json:"reasoning"`
-	MaxContext   int    `json:"max_context"`
-	DefaultModel bool   `json:"default_model"`
+	ID         string `json:"id"`
+	Vision     bool   `json:"vision"`
+	Tools      bool   `json:"tools"`
+	Reasoning  bool   `json:"reasoning"`
+	MaxContext int    `json:"max_context"`
 }
 
 // KnownModelCapabilities contains heuristics for popular models.
 // Unknown models will be detected by ID patterns.
 var knownModelCapabilities = map[string]ModelCapability{
-	"gpt-4o":          {ID: "gpt-4o", Vision: true, Tools: true, Reasoning: false, MaxContext: 128000},
-	"gpt-4o-mini":     {ID: "gpt-4o-mini", Vision: true, Tools: true, Reasoning: false, MaxContext: 128000},
-	"gpt-4-turbo":     {ID: "gpt-4-turbo", Vision: true, Tools: true, Reasoning: false, MaxContext: 128000},
-	"gpt-4":           {ID: "gpt-4", Vision: false, Tools: true, Reasoning: false, MaxContext: 8192},
-	"gpt-3.5-turbo":   {ID: "gpt-3.5-turbo", Vision: false, Tools: true, Reasoning: false, MaxContext: 16385},
-	"o1":              {ID: "o1", Vision: false, Tools: true, Reasoning: true, MaxContext: 200000},
-	"o1-mini":         {ID: "o1-mini", Vision: false, Tools: true, Reasoning: true, MaxContext: 128000},
-	"o3":              {ID: "o3", Vision: false, Tools: true, Reasoning: true, MaxContext: 200000},
-	"o3-mini":         {ID: "o3-mini", Vision: false, Tools: true, Reasoning: true, MaxContext: 200000},
-	"claude-3-opus":   {ID: "claude-3-opus", Vision: true, Tools: true, Reasoning: false, MaxContext: 200000},
-	"claude-3-sonnet": {ID: "claude-3-sonnet", Vision: true, Tools: true, Reasoning: false, MaxContext: 200000},
-	"claude-3-haiku":  {ID: "claude-3-haiku", Vision: true, Tools: true, Reasoning: false, MaxContext: 200000},
-	"gemini-pro":      {ID: "gemini-pro", Vision: false, Tools: true, Reasoning: false, MaxContext: 1000000},
-	"gemini-pro-vision": {ID: "gemini-pro-vision", Vision: true, Tools: true, Reasoning: false, MaxContext: 1000000},
+	"gpt-4o":                 {ID: "gpt-4o", Vision: true, Tools: true, Reasoning: false, MaxContext: 128000},
+	"gpt-4o-mini":            {ID: "gpt-4o-mini", Vision: true, Tools: true, Reasoning: false, MaxContext: 128000},
+	"gpt-4o-latest":          {ID: "gpt-4o-latest", Vision: true, Tools: true, Reasoning: false, MaxContext: 128000},
+	"gpt-4-turbo":            {ID: "gpt-4-turbo", Vision: true, Tools: true, Reasoning: false, MaxContext: 128000},
+	"gpt-4-turbo-preview":    {ID: "gpt-4-turbo-preview", Vision: true, Tools: true, Reasoning: false, MaxContext: 128000},
+	"gpt-4":                  {ID: "gpt-4", Vision: false, Tools: true, Reasoning: false, MaxContext: 8192},
+	"gpt-3.5-turbo":          {ID: "gpt-3.5-turbo", Vision: false, Tools: true, Reasoning: false, MaxContext: 16385},
+	"o1":                     {ID: "o1", Vision: false, Tools: true, Reasoning: true, MaxContext: 200000},
+	"o1-mini":                {ID: "o1-mini", Vision: false, Tools: true, Reasoning: true, MaxContext: 128000},
+	"o1-preview":             {ID: "o1-preview", Vision: false, Tools: true, Reasoning: true, MaxContext: 128000},
+	"o3":                     {ID: "o3", Vision: false, Tools: true, Reasoning: true, MaxContext: 200000},
+	"o3-mini":                {ID: "o3-mini", Vision: false, Tools: true, Reasoning: true, MaxContext: 200000},
+	"claude-3-opus":          {ID: "claude-3-opus", Vision: true, Tools: true, Reasoning: false, MaxContext: 200000},
+	"claude-3-opus-20240229": {ID: "claude-3-opus-20240229", Vision: true, Tools: true, Reasoning: false, MaxContext: 200000},
+	"claude-3-sonnet":        {ID: "claude-3-sonnet", Vision: true, Tools: true, Reasoning: false, MaxContext: 200000},
+	"claude-3-5-sonnet":      {ID: "claude-3-5-sonnet", Vision: true, Tools: true, Reasoning: false, MaxContext: 200000},
+	"claude-3-haiku":         {ID: "claude-3-haiku", Vision: true, Tools: true, Reasoning: false, MaxContext: 200000},
+	"gemini-pro":             {ID: "gemini-pro", Vision: false, Tools: true, Reasoning: false, MaxContext: 1000000},
+	"gemini-pro-vision":      {ID: "gemini-pro-vision", Vision: true, Tools: true, Reasoning: false, MaxContext: 1000000},
+	"gemini-2.0-flash":       {ID: "gemini-2.0-flash", Vision: true, Tools: true, Reasoning: false, MaxContext: 1000000},
+	"gemini-1.5-pro":         {ID: "gemini-1.5-pro", Vision: true, Tools: true, Reasoning: false, MaxContext: 1000000},
 }
 
 // DetectCapability guesses a model's capability from its ID.
@@ -45,13 +51,20 @@ func DetectCapability(modelID string) ModelCapability {
 	}
 
 	cap := ModelCapability{ID: modelID, MaxContext: 128000}
-	if strings.Contains(id, "vision") || strings.Contains(id, "4o") || strings.Contains(id, "claude-3") || strings.Contains(id, "gemini-pro-vision") {
+	if strings.Contains(id, "vision") ||
+		strings.Contains(id, "4o") ||
+		strings.Contains(id, "claude-3") ||
+		(strings.Contains(id, "gemini") && !strings.Contains(id, "gemini-pro")) {
 		cap.Vision = true
 	}
-	if !strings.Contains(id, "embedding") && !strings.Contains(id, "tts") && !strings.Contains(id, "whisper") && !strings.Contains(id, "dall-e") {
+	if !strings.Contains(id, "embedding") &&
+		!strings.Contains(id, "tts") &&
+		!strings.Contains(id, "whisper") &&
+		!strings.Contains(id, "dall-e") &&
+		!strings.Contains(id, "moderation") {
 		cap.Tools = true
 	}
-	if strings.HasPrefix(id, "o1") || strings.HasPrefix(id, "o3") {
+	if strings.HasPrefix(id, "o1") || strings.HasPrefix(id, "o3") || strings.Contains(id, "deepseek-r") {
 		cap.Reasoning = true
 	}
 	if strings.Contains(id, "32k") {
