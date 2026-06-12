@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"net/http"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -15,26 +16,31 @@ import (
 
 // Client is a OneBot v11 forward WebSocket client.
 type Client struct {
-	wsURL     string
-	conn      *websocket.Conn
-	llmClient *llm.Client
-	executor  llm.ToolExecutor
-	cfg       config.Config
-	handler   *Handler
-	running   atomic.Bool
-	mu        sync.Mutex
-	cancel    context.CancelFunc
+	wsURL       string
+	httpURL     string
+	accessToken string
+	conn        *websocket.Conn
+	llmClient   *llm.Client
+	executor    llm.ToolExecutor
+	cfg         config.Config
+	handler     *Handler
+	running     atomic.Bool
+	mu          sync.Mutex
+	cancel      context.CancelFunc
 }
-
-// NewClient creates a new OneBot WebSocket client.
 func NewClient(cfg config.Config, llmClient *llm.Client, executor llm.ToolExecutor) *Client {
-	return &Client{
-		wsURL:     cfg.Bot.OneBotWSURL,
-		llmClient: llmClient,
-		executor:  executor,
-		cfg:       cfg,
-		handler:   NewHandler(cfg, llmClient, executor),
+	client := &Client{
+		wsURL:       cfg.Bot.OneBotWSURL,
+		httpURL:     cfg.Bot.OneBotHTTPURL,
+		accessToken: cfg.Bot.AccessToken,
+		llmClient:   llmClient,
+		executor:    executor,
+		cfg:         cfg,
+		handler:     NewHandler(cfg, llmClient, executor),
 	}
+	ClientConfig.HTTPURL = cfg.Bot.OneBotHTTPURL
+	ClientConfig.AccessToken = cfg.Bot.AccessToken
+	return client
 }
 
 // Connect dials the OneBot WebSocket endpoint and starts reading events.
@@ -47,7 +53,11 @@ func (c *Client) Connect(ctx context.Context) error {
 	}
 
 	dialer := websocket.Dialer{HandshakeTimeout: 10 * time.Second}
-	conn, _, err := dialer.DialContext(ctx, c.wsURL, nil)
+	headers := http.Header{}
+	if c.accessToken != "" {
+		headers.Set("Authorization", "Bearer "+c.accessToken)
+	}
+	conn, _, err := dialer.DialContext(ctx, c.wsURL, headers)
 	if err != nil {
 		return fmt.Errorf("connect to onebot websocket failed: %w", err)
 	}

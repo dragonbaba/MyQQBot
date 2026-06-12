@@ -7,11 +7,18 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"strings"
 	"time"
 )
 
-const oneBotHTTPAPI = "http://127.0.0.1:3000/send_msg"
+const sendMsgPath = "/send_msg"
 const maxMessageLength = 4000
+
+// ClientConfig is set by the bot Client before sending.
+var ClientConfig struct {
+	HTTPURL     string
+	AccessToken string
+}
 
 // sendMessage sends a text message via the OneBot HTTP API.
 func sendMessage(msgType string, targetID int64, groupID int64, text string) error {
@@ -40,16 +47,25 @@ func sendSingleMessage(msgType string, targetID int64, groupID int64, text strin
 		return fmt.Errorf("marshal send_msg payload: %w", err)
 	}
 
+	apiURL := ClientConfig.HTTPURL
+	if apiURL == "" {
+		apiURL = "http://127.0.0.1:3000"
+	}
+	apiURL = strings.TrimSuffix(apiURL, "/") + sendMsgPath
+
 	var lastErr error
 	for attempt := 0; attempt < 2; attempt++ {
 		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 		defer cancel()
 
-		req, err := http.NewRequestWithContext(ctx, http.MethodPost, oneBotHTTPAPI, bytes.NewReader(body))
+		req, err := http.NewRequestWithContext(ctx, http.MethodPost, apiURL, bytes.NewReader(body))
 		if err != nil {
 			return fmt.Errorf("build send_msg request: %w", err)
 		}
 		req.Header.Set("Content-Type", "application/json")
+		if ClientConfig.AccessToken != "" {
+			req.Header.Set("Authorization", "Bearer "+ClientConfig.AccessToken)
+		}
 
 		resp, err := http.DefaultClient.Do(req)
 		if err != nil {

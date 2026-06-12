@@ -27,8 +27,10 @@ type ModelCapability struct {
 
 // BotConfig holds the OneBot adapter connection settings.
 type BotConfig struct {
-	OneBotWSURL string `mapstructure:"onebot_ws_url" json:"onebot_ws_url"`
-	AdminQQ     string `mapstructure:"admin_qq" json:"admin_qq"`
+	OneBotWSURL    string `mapstructure:"onebot_ws_url" json:"onebot_ws_url"`
+	OneBotHTTPURL  string `mapstructure:"onebot_http_url" json:"onebot_http_url"`
+	AccessToken    string `mapstructure:"access_token" json:"access_token"`
+	AdminQQ        string `mapstructure:"admin_qq" json:"admin_qq"`
 }
 
 // SearchConfig holds the web search provider settings.
@@ -57,8 +59,10 @@ func DefaultConfig() *Config {
 			ModelCapabilities: make(map[string]ModelCapability),
 		},
 		Bot: BotConfig{
-			OneBotWSURL: "ws://127.0.0.1:3001",
-			AdminQQ:     "",
+			OneBotWSURL:   "ws://127.0.0.1:3001",
+			OneBotHTTPURL: "http://127.0.0.1:3000",
+			AccessToken:   "",
+			AdminQQ:       "",
 		},
 		Search: SearchConfig{
 			Provider:     "duckduckgo",

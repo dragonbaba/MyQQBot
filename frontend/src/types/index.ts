@@ -17,6 +17,8 @@ export interface LLMConfig {
 
 export interface BotConfig {
   onebot_ws_url: string;
+  onebot_http_url: string;
+  access_token: string;
   admin_qq: string;
 }
 

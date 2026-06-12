@@ -22,6 +22,20 @@ export class BotConfig {
              */
             this["onebot_ws_url"] = "";
         }
+        if (!("onebot_http_url" in $$source)) {
+            /**
+             * @member
+             * @type {string}
+             */
+            this["onebot_http_url"] = "";
+        }
+        if (!("access_token" in $$source)) {
+            /**
+             * @member
+             * @type {string}
+             */
+            this["access_token"] = "";
+        }
         if (!("admin_qq" in $$source)) {
             /**
              * @member

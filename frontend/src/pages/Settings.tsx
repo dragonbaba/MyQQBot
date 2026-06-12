@@ -18,6 +18,8 @@ const defaultConfig: Config = {
   },
   bot: {
     onebot_ws_url: 'ws://127.0.0.1:3001',
+    onebot_http_url: 'http://127.0.0.1:3000',
+    access_token: '',
     admin_qq: '',
   },
   search: {
@@ -282,6 +284,26 @@ export function Settings() {
                 <input
                   value={cfg.bot.onebot_ws_url}
                   onChange={(e) => updateBot({ onebot_ws_url: e.target.value })}
+                  placeholder="ws://127.0.0.1:3001"
+                  className="mt-1 w-full bg-surface-base border border-border-subtle rounded-lg px-3 py-2 text-text-primary focus:outline-none focus:border-brand-cta/50"
+                />
+              </label>
+              <label className="block text-sm text-text-secondary">
+                OneBot HTTP URL
+                <input
+                  value={cfg.bot.onebot_http_url}
+                  onChange={(e) => updateBot({ onebot_http_url: e.target.value })}
+                  placeholder="http://127.0.0.1:3000"
+                  className="mt-1 w-full bg-surface-base border border-border-subtle rounded-lg px-3 py-2 text-text-primary focus:outline-none focus:border-brand-cta/50"
+                />
+              </label>
+              <label className="block text-sm text-text-secondary">
+                Access Token
+                <input
+                  type="password"
+                  value={cfg.bot.access_token}
+                  onChange={(e) => updateBot({ access_token: e.target.value })}
+                  placeholder="可选，与 OneBot 端配置的 token 一致"
                   className="mt-1 w-full bg-surface-base border border-border-subtle rounded-lg px-3 py-2 text-text-primary focus:outline-none focus:border-brand-cta/50"
                 />
               </label>
@@ -290,6 +312,7 @@ export function Settings() {
                 <input
                   value={cfg.bot.admin_qq}
                   onChange={(e) => updateBot({ admin_qq: e.target.value })}
+                  placeholder="管理员的 QQ 号"
                   className="mt-1 w-full bg-surface-base border border-border-subtle rounded-lg px-3 py-2 text-text-primary focus:outline-none focus:border-brand-cta/50"
                 />
               </label>
